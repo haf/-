@@ -11,6 +11,7 @@ import Html.Attributes
 import Mousikea.Examples.BlueLambda as BlueLambda
 import Mousikea.Examples.ChildrenSong6 as ChildrenSong
 import Mousikea.Examples.Drums as Drums
+import Mousikea.Examples.Mine as Mine
 import Mousikea.Examples.SingASongOfSong as SingA
 import Mousikea.Generator as Gen
 import Mousikea.Midi.MEvent as Perf exposing (Performance)
@@ -32,6 +33,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { static =
             Dict.empty
+                |> Dict.insert "0. Mine" (Mine.music |> Perf.performNote1)
                 |> Dict.insert "1. Children's Songs No. 6 (Chick Corea)" (ChildrenSong.childSong6 |> Perf.performNote1)
                 |> Dict.insert "2. Blue Lambda" (BlueLambda.blueLambda |> Perf.performNote1)
                 |> Dict.insert "3. Simple Disco Drum Beat" (Drums.simpleBeat |> Perf.performNote1)

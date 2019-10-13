@@ -7,10 +7,14 @@ module Mousikea.Primitive exposing
 import Mousikea.Util.Ratio exposing (Rational)
 
 
+{-| Duration [0, 127] in Midi convention
+-}
 type alias Dur =
     Rational
 
 
+{-| Either a `Note Dur a` or a `Rest Dur`
+-}
 type Primitive a
     = Note Dur a
     | Rest Dur

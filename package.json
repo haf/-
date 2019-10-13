@@ -6,7 +6,9 @@
   "directories": {
     "test": "tests"
   },
-  "dependencies": {},
+  "dependencies": {
+    "elm-format": "^0.8.2"
+  },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
     "webaudiofont": "^2.5.47"

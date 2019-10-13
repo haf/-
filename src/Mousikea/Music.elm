@@ -1,138 +1,26 @@
 module Mousikea.Music exposing
-    ( AbsPitch
-    , Articulation(..)
-    , Control(..)
-    , Dynamic(..)
-    , InstrumentName(..)
-    , Mode(..)
+    ( d
     , Music(..)
-    , Music1
-    , Note1
-    , NoteAttribute(..)
-    , NoteHead(..)
-    , Octave
-    , Ornament(..)
-    , PhraseAttribute(..)
-    , Pitch
-    , PitchClass(..)
-    , StdLoudness(..)
-    , Tempo(..)
-    , Volume
-    , a
-    , absPitch
-    , af
-    , aff
-    , as_
-    , ass
-    , b
-    , bf
-    , bff
-    , bn
-    , bnr
-    , bs
-    , bss
-    , c
-    , cf
-    , cff
-    , changeInstrument
-    , chord
-    , cs
-    , css
-    , cut
-    , d
-    , dden
-    , ddenr
-    , ddhn
-    , ddhnr
-    , ddqn
-    , ddqnr
-    , den
-    , denr
-    , df
-    , dff
-    , dhn
-    , dhnr
-    , dqn
-    , dqnr
-    , ds
-    , dsn
-    , dsnr
-    , dss
-    , dtn
-    , dtnr
-    , duration
-    , dwn
-    , dwnr
-    , e_
-    , ef
-    , eff
-    , empty
-    , en
-    , enr
-    , es
-    , ess
-    , f
-    , ff
-    , fff
-    , flip
-    , fold
-    , fromAbsPitch
-    , fromAbsPitchVolume
-    , fromNote1
-    , fromPitch
-    , fromPitchVolume
-    , fs
-    , fss
-    , g
-    , gf
-    , gff
-    , gs
-    , gss
-    , hn
-    , hnr
-    , indexToPitchClass
-    , instrument
-    , invert
-    , invert1
-    , invertAt
-    , invertAt1
-    , invertRetro
-    , isZero
-    , keysig
-    , line
-    , lineToList
-    , map
-    , note
-    , offset
-    , pcToInt
-    , perc
-    , phrase
-    , pitch
-    , qn
-    , qnr
-    , remove
-    , removeInstruments
-    , removeZeros
-    , rest
-    , retro
-    , retroInvert
-    , scaleDurations
-    , sfn
-    , sfnr
-    , shiftPitches
-    , shiftPitches1
-    , sn
-    , snr
-    , tempo
-    , times
-    , tn
-    , tnr
-    , trans
-    , transpose
-    , wn
-    , wnr
-    , zero
+    , AbsPitch, Articulation(..), Control(..), Dynamic(..), InstrumentName(..), Mode(..), Music1, Note1, NoteAttribute(..), NoteHead(..), Octave, Ornament(..), PhraseAttribute(..), Pitch, PitchClass(..), StdLoudness(..), Tempo(..), Volume, a, absPitch, af, aff, as_, ass, b, bf, bff, bn, bnr, bs, bss, c, cf, cff, changeInstrument, chord, cs, css, cut, dden, ddenr, ddhn, ddhnr, ddqn, ddqnr, den, denr, df, dff, dhn, dhnr, dqn, dqnr, ds, dsn, dsnr, dss, dtn, dtnr, duration, dwn, dwnr, e_, ef, eff, empty, en, enr, es, ess, f, ff, fff, flip, fold, fromAbsPitch, fromAbsPitchVolume, fromNote1, fromPitch, fromPitchVolume, fs, fss, g, gf, gff, gs, gss, hn, hnr, indexToPitchClass, instrument, invert, invert1, invertAt, invertAt1, invertRetro, isZero, keysig, line, lineToList, map, note, offset, pcToInt, perc, phrase, pitch, qn, qnr, remove, removeInstruments, removeZeros, rest, retro, retroInvert, scaleDurations, sfn, sfnr, shiftPitches, shiftPitches1, sn, snr, tempo, times, tn, tnr, trans, transpose, wn, wnr, zero
     )
+
+{-| This module has important datatypes and functions in Mousikea for working
+with music at the “note level,” or roughly at the level of a paper score.
+
+For more information on the functions, types, and type classes listed here,
+please see the Haskell School of Music textbook or, browse the docs for each function.
+
+Docs from: <http://www.euterpea.com/api/euterpea-api/note-level-api/>
+
+Most of the functions, like `d`:
+
+@docs d
+
+are used to compose `Music` values. `Music` is defined as follows:
+
+@docs Music
+
+-}
 
 import Mousikea.PercussionSound as Perc exposing (PercussionSound)
 import Mousikea.Primitive as Primitive exposing (Dur, Primitive(..))
@@ -143,6 +31,8 @@ import Mousikea.Util.Ratio as Ratio exposing (Rational)
 ---- Music Type ----
 
 
+{-| Polymorphic structure for representing music.
+-}
 type Music a
     = Prim (Primitive a) --  primitive value
     | Seq (Music a) (Music a) --  sequential composition
@@ -150,6 +40,8 @@ type Music a
     | Modify Control (Music a) --  modifier
 
 
+{-| Type alias for `Music ( Pitch, List NoteAttribute )` aka `Music Note1`
+-}
 type alias Music1 =
     Music Note1
 
@@ -158,6 +50,14 @@ type alias Music1 =
 ---- Other Types
 
 
+{-| The pitch class
+
+A pitch class is a set of all pitches with the same note name or its enharmonic equivalent.
+An example of this is that the notes E sharp, F, and G double flat are in all octaves.
+
+PitchClass is often used together with an Octave.
+
+-}
 type PitchClass
     = Cff
     | Cf
@@ -204,10 +104,18 @@ type alias Octave =
     Int
 
 
+{-| In music, the pitch of a note means how high or low the note is.
+
+In physics, it is measured in a unit called Hertz. A note that is vibrating
+at 261 Hz will be caused by sound waves that vibrate at 261 times a second.
+This will be Middle C on the piano.
+
+-}
 type alias Pitch =
     ( PitchClass, Octave )
 
 
+{-| -}
 type Control
     = Tempo Rational --  scale the tempo
     | Transpose AbsPitch --  transposition
@@ -217,6 +125,7 @@ type Control
     | Custom String --  for user-specified controls
 
 
+{-| -}
 type Mode
     = Major
     | Minor
@@ -230,6 +139,7 @@ type Mode
     | CustomMode String
 
 
+{-| -}
 type InstrumentName
     = AcousticGrandPiano
     | BrightAcousticPiano
@@ -448,8 +358,13 @@ type alias Volume =
     Int
 
 
+{-| NoteAttribute
+
+Volume uses the MIDI convention: 0=Ratio.min, 127=Ratio.max
+
+-}
 type NoteAttribute
-    = Volume Int --  MIDI convention: 0=Ratio.min, 127=Ratio.max
+    = Volume Int
     | Fingering Int
     | Dynamics String
     | Params (List Float)
@@ -492,36 +407,54 @@ fromAbsPitchVolume =
 ----
 
 
+{-| Creates a single Note.
+
+    note en ( C, 4 ) =
+        Prim (Note en ( C, 4 ))
+
+-}
 note : Dur -> a -> Music a
 note dur p =
     Prim (Note dur p)
 
 
+{-| Creates a single Rest.
+-}
 rest : Dur -> Music a
 rest dur =
     Prim (Rest dur)
 
 
+{-| Adds a Tempo modifier.
+-}
 tempo : Dur -> Music a -> Music a
 tempo r m =
     Modify (Tempo r) m
 
 
+{-| Adds a Transpose modifier.
+-}
 transpose : AbsPitch -> Music a -> Music a
 transpose i m =
     Modify (Transpose i) m
 
 
+{-| Adds an Instrument modifier.
+-}
 instrument : InstrumentName -> Music a -> Music a
 instrument i m =
     Modify (Instrument i) m
 
 
+{-| Adds a Phrase modifier.
+-}
 phrase : List PhraseAttribute -> Music a -> Music a
 phrase pa m =
     Modify (Phrase pa) m
 
 
+{-| Adds a KeySig modifier.
+-}
 keysig : PitchClass -> Mode -> Music a -> Music a
 keysig pc mo m =
     Modify (KeySig pc mo) m
@@ -750,6 +683,8 @@ qnr =
     rest qn
 
 
+{-| eighth note
+-}
 en : Dur
 en =
     Ratio.over 1 8
@@ -762,6 +697,8 @@ enr =
     rest en
 
 
+{-| sixteenth note
+-}
 sn : Dur
 sn =
     Ratio.over 1 16
@@ -774,6 +711,8 @@ snr =
     rest sn
 
 
+{-| thirty-second note
+-}
 tn : Dur
 tn =
     Ratio.over 1 32
@@ -786,6 +725,8 @@ tnr =
     rest tn
 
 
+{-| sixty-fourth note
+-}
 sfn : Dur
 sfn =
     Ratio.over 1 64
@@ -798,6 +739,8 @@ sfnr =
     rest sfn
 
 
+{-| dotted whole note
+-}
 dwn : Dur
 dwn =
     Ratio.over 3 2
@@ -1095,6 +1038,8 @@ trans i p =
     pitch (absPitch p + i)
 
 
+{-| Put a list of music values together sequentially.
+-}
 line : List (Music a) -> Music a
 line =
     List.foldr Seq empty
@@ -1409,6 +1354,8 @@ removeZeros m =
             Modify control (removeZeros m_)
 
 
+{-| Creates a note wrapped with the Percussion instrument.
+-}
 perc : PercussionSound -> Dur -> Music Pitch
 perc ps dur =
     instrument Percussion (note dur (pitch (Perc.fromEnum ps + 35)))
@@ -1439,16 +1386,22 @@ fold func onSeq onPar func2 m =
 ---- rather than wrapping it with Modify. The following functions allow this. ----
 
 
+{-| Shifts all pitches in a Music Pitch value by the specified amount.
+-}
 shiftPitches : AbsPitch -> Music Pitch -> Music Pitch
 shiftPitches k =
     map (trans k)
 
 
+{-| Shifts all pitches in a Music(Pitch,x) value by the specified amount.
+-}
 shiftPitches1 : AbsPitch -> Music ( Pitch, b ) -> Music ( Pitch, b )
 shiftPitches1 k =
     map (\( p, xs ) -> ( trans k p, xs ))
 
 
+{-| Alters the durations of a Music value.
+-}
 scaleDurations : Rational -> Music a -> Music a
 scaleDurations r m =
     case m of
@@ -1468,11 +1421,15 @@ scaleDurations r m =
             Modify control (scaleDurations r m_)
 
 
+{-| Changes the instrument of a Music value and Removes any nested Instrument modifiers.
+-}
 changeInstrument : InstrumentName -> Music a -> Music a
 changeInstrument i m =
     Modify (Instrument i) (removeInstruments m)
 
 
+{-| Strips all Instrument modifiers from a Music value.
+-}
 removeInstruments : Music a -> Music a
 removeInstruments m =
     case m of

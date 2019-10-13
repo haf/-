@@ -1,17 +1,15 @@
 module Mousikea.Midi.MEvent exposing
-    ( DurT
-    , MContext
-    , MEvent
-    , PTime
-    , Performance
-    , perform1
-    , perform1Dur
-    , performAbsPitch
-    , performAbsPitchVol
-    , performNote1
-    , performPitch
-    , performPitchVol
+    ( Performance
+    , DurT, MContext, MEvent, PTime, perform1, perform1Dur, performAbsPitch, performAbsPitchVol, performNote1, performPitch, performPitchVol
     )
+
+{-| Event representation for notes. Used in conversion from Music to MIDI.
+
+Many functions in Mousikea act on `Performance`, which is defined as:
+
+@docs Performance
+
+-}
 
 import Mousikea.Music
     exposing

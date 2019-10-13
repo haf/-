@@ -29,6 +29,8 @@ app.ports.stop.subscribe(function () {
 
 app.ports.play.subscribe(function (data) {
   initialize()
+  console.log('play port received:',  data)
+
   data.instruments.forEach(function (instrument) {
     const info = player.loader.instrumentInfo(instrument)
     player.loader.startLoad(audioContext, info.url, info.variable)

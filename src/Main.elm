@@ -173,10 +173,10 @@ update msg model =
             let
                 job =
                     message
-                        |> Debug.log "message"
+                        -- |> Debug.log "message"
                         |> decodeString commitJobDecoder
-                        |> Debug.log "job"
 
+                -- |> Debug.log "job"
                 nextMessage =
                     job
                         |> Result.map (\j -> j.commit.message)

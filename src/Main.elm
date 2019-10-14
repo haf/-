@@ -71,6 +71,8 @@ available =
     [ Mine.simpleBeat
     , Mine.simpleBeat2
     , Mine.simpleBeat3
+    , Mine.simpleBeat4
+    , Mine.simpleBeat5
     ]
 
 

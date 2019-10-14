@@ -1,4 +1,4 @@
-module Mousikea.Examples.Mine exposing (music, simpleBeat, simpleBeat2, simpleBeat3)
+module Mousikea.Examples.Mine exposing (music, simpleBeat, simpleBeat2, simpleBeat3, simpleBeat4, simpleBeat5)
 
 import Mousikea.Music as Music exposing (..)
 import Mousikea.PercussionSound exposing (PercussionSound(..))
@@ -44,6 +44,24 @@ simpleBeat3 =
     times 4 (perc RideCymbal1 qn)
         |> Par (times 10 (perc ClosedHiHat en))
         |> Par (line [ rest qn, Par (perc RideCymbal1 qn) (perc HiBongo qn) ] |> times 4)
+        |> times 16
+        |> Music.map (\p -> ( p, [ Volume 60 ] ))
+
+
+simpleBeat4 : Music1
+simpleBeat4 =
+    times 4 (perc Vibraslap qn)
+        |> Par (times 10 (perc ClosedHiHat en))
+        |> Par (line [ rest qn, Par (perc Vibraslap qn) (perc HiBongo qn) ] |> times 4)
+        |> times 16
+        |> Music.map (\p -> ( p, [ Volume 60 ] ))
+
+
+simpleBeat5 : Music1
+simpleBeat5 =
+    times 4 (perc MuteTriangle qn)
+        |> Par (times 10 (perc ClosedHiHat en))
+        |> Par (line [ rest qn, Par (perc MuteTriangle qn) (perc HighTom qn) ] |> times 4)
         |> times 16
         |> Music.map (\p -> ( p, [ Volume 60 ] ))
 

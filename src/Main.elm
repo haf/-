@@ -83,6 +83,8 @@ available : List Music1
 available =
     [ fallback
     , Mine.simpleBeat
+    , Mine.simpleBeat2
+    , Mine.simpleBeat3
     ]
 
 

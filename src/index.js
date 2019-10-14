@@ -25,6 +25,7 @@ travisListener.on('job', (job, type) => {
 const AudioContextFunc = window.AudioContext || window.webkitAudioContext
 let audioContext = null
 let player = null
+let current = null
 
 function initialize() {
   if (audioContext == null) {
@@ -58,6 +59,20 @@ app.ports.play.subscribe(function (data) {
     player.cancelQueue(audioContext)
 
     const startTime = audioContext.currentTime + 0.5
+    const duration = 0.5 + data.events.map(x => x.duration).reduce((sum, n) => sum + n, 0)
+
+    console.log('setting timeout in ', duration)
+    if (current != null) {
+      clearTimeout(current);
+      app.ports.musicStopped.send("")
+    }
+    current = setTimeout(() => {
+      app.ports.musicStopped.send("")
+    }, duration * 1000)
+
+    setTimeout(() => {
+      app.ports.musicStarted.send("")
+    }, 500)
 
     data.events.forEach(function (event) {
       if (event.instrument.type == 'percussion') {

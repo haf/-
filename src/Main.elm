@@ -7,7 +7,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Html.Attributes
+import Html.Attributes exposing (style)
 import Json.Decode exposing (Decoder, decodeString, field, int, map2, map3, string)
 import Mousikea.Examples.BlueLambda as BlueLambda
 import Mousikea.Examples.ChildrenSong6 as ChildrenSong
@@ -34,6 +34,12 @@ port websocketIn : (String -> msg) -> Sub msg
 port websocketOut : String -> Cmd msg
 
 
+port musicStopped : (String -> msg) -> Sub msg
+
+
+port musicStarted : (String -> msg) -> Sub msg
+
+
 
 ---- MODEL ----
 
@@ -49,11 +55,8 @@ init : ( Model, Cmd Msg )
 init =
     ( { static =
             Dict.empty
-                |> Dict.insert "0. Mine" (Drums.africanDrumBeat |> Perf.performNote1)
-                |> Dict.insert "1. Children's Songs No. 6 (Chick Corea)" (ChildrenSong.childSong6 |> Perf.performNote1)
-                |> Dict.insert "2. Blue Lambda" (BlueLambda.blueLambda |> Perf.performNote1)
+                |> Dict.insert "0. Mine" (Mine.music |> Perf.performNote1)
                 |> Dict.insert "3. Simple Disco Drum Beat" (Drums.simpleBeat |> Perf.performNote1)
-                |> Dict.insert "4. Sing A Song Of Song (Kenny Garrett)" (SingA.song |> Perf.performNote1)
       , random =
             Dict.empty
                 |> Dict.insert "5. Randomness with Tonality and Volume" (Gen.randomness |> Random.map Perf.performAbsPitchVol)
@@ -70,6 +73,8 @@ type Msg
     | Generate String
     | Generated Performance
     | TravisMessage String
+    | MusicStarted String
+    | MusicStopped String
     | Stop
 
 
@@ -126,7 +131,11 @@ commitJobDecoder =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    websocketIn TravisMessage
+    Sub.batch
+        [ websocketIn TravisMessage
+        , musicStopped MusicStopped
+        , musicStarted MusicStarted
+        ]
 
 
 nonePlaying =
@@ -156,8 +165,15 @@ update msg model =
             let
                 nextModel =
                     { model | current = nonePlaying }
+
+                nextCmd =
+                    Cmd.batch
+                        [ WebAudioFont.stop ()
+
+                        -- TODO: update: music stopped
+                        ]
             in
-            ( nextModel, WebAudioFont.stop () )
+            ( nextModel, nextCmd )
 
         Generate key ->
             let
@@ -173,10 +189,8 @@ update msg model =
             let
                 job =
                     message
-                        -- |> Debug.log "message"
                         |> decodeString commitJobDecoder
 
-                -- |> Debug.log "job"
                 nextMessage =
                     job
                         |> Result.map (\j -> j.commit.message)
@@ -186,6 +200,18 @@ update msg model =
                     { model | current = nextMessage }
             in
             ( nextModel, Cmd.none )
+
+        MusicStarted str ->
+            -- TODO:
+            str
+                |> Debug.log "elm: music started"
+                |> (\d -> ( model, Cmd.none ))
+
+        MusicStopped str ->
+            -- TODO:
+            str
+                |> Debug.log "elm: music stopped"
+                |> (\d -> ( model, Cmd.none ))
 
 
 
@@ -207,8 +233,7 @@ view model =
         [ CDN.stylesheet -- creates an inline style node with the Bootstrap CSS
         , Grid.row []
             [ Grid.col []
-                [ Html.h1 [] [ Html.text "Henrik och Axel" ]
-                , Html.h3 [] [ Html.text model.current ]
+                [ Html.h1 [] [ Html.text "Henrik & Axel Music Masters" ]
                 , model.static
                     |> Dict.keys
                     |> List.map (viewSong Play)
@@ -217,6 +242,9 @@ view model =
                     |> Dict.keys
                     |> List.map (viewSong Generate)
                     |> Html.div []
+                , Html.h3
+                    [ style "margin-top" "2rem" ]
+                    [ Html.text model.current ]
                 ]
             ]
         ]

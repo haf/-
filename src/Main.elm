@@ -16,7 +16,11 @@ import Mousikea.Examples.Mine as Mine
 import Mousikea.Examples.SingASongOfSong as SingA
 import Mousikea.Generator as Gen
 import Mousikea.Midi.MEvent as Perf exposing (Performance)
+import Mousikea.Music as Music exposing (..)
+import Mousikea.PercussionSound exposing (PercussionSound(..))
+import Mousikea.Primitive exposing (Dur, Primitive(..))
 import Random
+import String
 import WebAudioFont
 
 
@@ -48,7 +52,38 @@ type alias Model =
     { static : Dict String Performance
     , random : Dict String (Random.Generator Performance)
     , current : String
+    , playing : Maybe Performance
+    , nextUp : Maybe Performance
     }
+
+
+at index list =
+    -- 3 [ 1, 2, 3, 4, 5, 6 ]
+    if List.length list >= index then
+        List.take index list
+            -- [ 1, 2, 3 ]
+            |> List.reverse
+            -- [ 3, 2, 1 ]
+            |> List.head
+        -- Just 3
+
+    else
+        Nothing
+
+
+v =
+    Music.map (\p -> ( p, [ Volume 60 ] ))
+
+
+fallback =
+    Mine.music
+
+
+available : List Music1
+available =
+    [ fallback
+    , Mine.simpleBeat
+    ]
 
 
 init : ( Model, Cmd Msg )
@@ -63,6 +98,8 @@ init =
                 |> Dict.insert "6. Blue Bossa Jam" (Gen.blueBossa |> Random.map Perf.performNote1)
                 |> Dict.insert "7. Random Bossa" (Gen.bossa |> Random.map Perf.performNote1)
       , current = "None playing..."
+      , playing = Nothing
+      , nextUp = Nothing
       }
     , Cmd.none
     )
@@ -196,22 +233,58 @@ update msg model =
                         |> Result.map (\j -> j.commit.message)
                         |> Result.withDefault model.current
 
-                nextModel =
-                    { model | current = nextMessage }
+                music =
+                    nextMessage
+                        |> String.uncons
+                        |> Maybe.map (\( c, rest ) -> Char.toCode c)
+                        |> Maybe.withDefault 0
+                        |> modBy (List.length available)
+                        |> (\i -> at i available)
+                        |> Maybe.withDefault fallback
+
+                perf =
+                    Par music Mine.simpleBeat
+                        |> Perf.performNote1
+
+                ( nextModel, cmd ) =
+                    case model.playing |> Debug.log "playing now" of
+                        Nothing ->
+                            ( { model | nextUp = Nothing, current = nextMessage, playing = Just perf }, WebAudioFont.queueWavTable perf )
+
+                        Just p ->
+                            ( { model | nextUp = Just p, current = nextMessage }, Cmd.none )
             in
-            ( nextModel, Cmd.none )
+            ( nextModel, cmd )
 
         MusicStarted str ->
-            -- TODO:
+            let
+                playing =
+                    model.nextUp |> Maybe.withDefault (Perf.performNote1 fallback)
+
+                nextModel =
+                    { model | nextUp = Nothing, playing = Just playing }
+
+                -- TODO:
+            in
             str
                 |> Debug.log "elm: music started"
-                |> (\d -> ( model, Cmd.none ))
+                |> (\d -> ( nextModel, Cmd.none ))
 
         MusicStopped str ->
-            -- TODO:
+            let
+                nextModel =
+                    { model | playing = Nothing }
+
+                toPlay =
+                    model.nextUp
+                        |> Maybe.withDefault (Perf.performNote1 fallback)
+
+                nextCmd =
+                    WebAudioFont.queueWavTable toPlay
+            in
             str
                 |> Debug.log "elm: music stopped"
-                |> (\d -> ( model, Cmd.none ))
+                |> (\d -> ( model, nextCmd ))
 
 
 

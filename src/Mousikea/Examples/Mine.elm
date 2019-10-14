@@ -1,4 +1,4 @@
-module Mousikea.Examples.Mine exposing (music)
+module Mousikea.Examples.Mine exposing (music, simpleBeat)
 
 import Mousikea.Music as Music exposing (..)
 import Mousikea.PercussionSound exposing (PercussionSound(..))
@@ -24,6 +24,15 @@ playground =
 simpleBeat : Music1
 simpleBeat =
     times 4 (perc AcousticBassDrum qn)
+        |> Par (times 8 (perc ClosedHiHat en))
+        |> Par (line [ rest qn, Par (perc AcousticSnare qn) (perc HandClap qn) ] |> times 4)
+        |> times 16
+        |> Music.map (\p -> ( p, [ Volume 60 ] ))
+
+
+simpleBeat2 : Music1
+simpleBeat2 =
+    times 4 (perc AcousticSnare qn)
         |> Par (times 8 (perc ClosedHiHat en))
         |> Par (line [ rest qn, Par (perc AcousticSnare qn) (perc HandClap qn) ] |> times 4)
         |> times 16

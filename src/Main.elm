@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
@@ -8,6 +8,7 @@ import Browser
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
+import Json.Decode exposing (Decoder, decodeString, field, int, map2, map3, string)
 import Mousikea.Examples.BlueLambda as BlueLambda
 import Mousikea.Examples.ChildrenSong6 as ChildrenSong
 import Mousikea.Examples.Drums as Drums
@@ -17,6 +18,20 @@ import Mousikea.Generator as Gen
 import Mousikea.Midi.MEvent as Perf exposing (Performance)
 import Random
 import WebAudioFont
+
+
+
+-- JavaScript usage: app.ports.websocketIn.send(response);
+
+
+port websocketIn : (String -> msg) -> Sub msg
+
+
+
+-- JavaScript usage: app.ports.websocketOut.subscribe(handler);
+
+
+port websocketOut : String -> Cmd msg
 
 
 
@@ -50,10 +65,6 @@ init =
     )
 
 
-
----- UPDATE ----
-
-
 type Msg
     = Play String
     | Generate String
@@ -62,8 +73,68 @@ type Msg
     | Stop
 
 
+
+---- Travis model ----
+
+
+type alias TravisJobConfig =
+    { os : String
+    , language : String
+    }
+
+
+travisJobConfigDecoder : Decoder TravisJobConfig
+travisJobConfigDecoder =
+    map2 TravisJobConfig
+        (field "os" string)
+        (field "language" string)
+
+
+type alias TravisJobCommit =
+    { sha : String
+    , message : String
+    }
+
+
+travisJobCommitDecoder : Decoder TravisJobCommit
+travisJobCommitDecoder =
+    map2 TravisJobCommit
+        (field "sha" string)
+        (field "message" string)
+
+
+type alias TravisJob =
+    { id : Int
+    , config : TravisJobConfig
+    , commit : TravisJobCommit
+    }
+
+
+commitJobDecoder : Decoder TravisJob
+commitJobDecoder =
+    field "job"
+        (map3 TravisJob
+            (field "id" int)
+            (field "config" travisJobConfigDecoder)
+            (field "commit" travisJobCommitDecoder)
+        )
+
+
+
+---- SUBSCRIPTIONS ----
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    websocketIn TravisMessage
+
+
 nonePlaying =
     "None playing..."
+
+
+
+---- UPDATE ----
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -99,7 +170,22 @@ update msg model =
             ( model, WebAudioFont.queueWavTable performance )
 
         TravisMessage message ->
-            ( model, Cmd.none )
+            let
+                job =
+                    message
+                        |> Debug.log "message"
+                        |> decodeString commitJobDecoder
+                        |> Debug.log "job"
+
+                nextMessage =
+                    job
+                        |> Result.map (\j -> j.commit.message)
+                        |> Result.withDefault model.current
+
+                nextModel =
+                    { model | current = nextMessage }
+            in
+            ( nextModel, Cmd.none )
 
 
 
@@ -146,5 +232,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }

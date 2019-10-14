@@ -11,8 +11,13 @@ const app = Elm.Main.init({
 
 // Websocket:
 travisListener.connect();
-travisListener.on('job', (job, eventType) => {
-  console.log(eventType, job)
+travisListener.on('job', (job, type) => {
+  const json = JSON.stringify({
+    type,
+    job
+  })
+  // console.log(type, job)
+  app.ports.websocketIn.send(json)
 })
 
 // Audio playback:

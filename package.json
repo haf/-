@@ -1,5 +1,5 @@
 {
-  "name": "mousikea",
+  "name": "🎶.haf.se",
   "version": "1.0.0",
   "description": "This project is bootstrapped with [Create Elm App](https://github.com/halfzebra/create-elm-app).",
   "main": "index.js",
@@ -10,11 +10,12 @@
     "elm-format": "^0.8.2"
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^5.9.0",
-    "webaudiofont": "^2.5.47"
+    "@fortawesome/fontawesome-free": "^5.11.2",
+    "webaudiofont": "^2.5.48"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "elm-app test",
+    "autotest": "elm-app test --watch"
   },
   "keywords": [],
   "author": "",

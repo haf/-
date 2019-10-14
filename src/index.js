@@ -9,9 +9,17 @@ const app = Elm.Main.init({
   node: document.getElementById('root')
 })
 
+// Websocket:
+travisListener.connect();
+travisListener.on('job', (job, eventType) => {
+  console.log(eventType, job)
+})
+
+// Audio playback:
+
 const AudioContextFunc = window.AudioContext || window.webkitAudioContext
-var audioContext = null
-var player = null
+let audioContext = null
+let player = null
 
 function initialize() {
   if (audioContext == null) {

@@ -26,6 +26,7 @@ import WebAudioFont
 type alias Model =
     { static : Dict String Performance
     , random : Dict String (Random.Generator Performance)
+    , current : String
     }
 
 
@@ -33,7 +34,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { static =
             Dict.empty
-                |> Dict.insert "0. Mine" (Mine.music |> Perf.performNote1)
+                |> Dict.insert "0. Mine" (Drums.africanDrumBeat |> Perf.performNote1)
                 |> Dict.insert "1. Children's Songs No. 6 (Chick Corea)" (ChildrenSong.childSong6 |> Perf.performNote1)
                 |> Dict.insert "2. Blue Lambda" (BlueLambda.blueLambda |> Perf.performNote1)
                 |> Dict.insert "3. Simple Disco Drum Beat" (Drums.simpleBeat |> Perf.performNote1)
@@ -43,6 +44,7 @@ init =
                 |> Dict.insert "5. Randomness with Tonality and Volume" (Gen.randomness |> Random.map Perf.performAbsPitchVol)
                 |> Dict.insert "6. Blue Bossa Jam" (Gen.blueBossa |> Random.map Perf.performNote1)
                 |> Dict.insert "7. Random Bossa" (Gen.bossa |> Random.map Perf.performNote1)
+      , current = "None playing..."
       }
     , Cmd.none
     )
@@ -56,23 +58,48 @@ type Msg
     = Play String
     | Generate String
     | Generated Performance
+    | TravisMessage String
     | Stop
+
+
+nonePlaying =
+    "None playing..."
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Play key ->
-            ( model, model.static |> Dict.get key |> Maybe.map WebAudioFont.queueWavTable |> Maybe.withDefault Cmd.none )
+            let
+                found =
+                    model.static
+                        |> Dict.get key
+                        |> Maybe.map WebAudioFont.queueWavTable
+
+                nextModel =
+                    { model | current = found |> Maybe.map (\m -> "Currently playing: " ++ key) |> Maybe.withDefault nonePlaying }
+            in
+            ( nextModel, found |> Maybe.withDefault Cmd.none )
 
         Stop ->
-            ( model, WebAudioFont.stop () )
+            let
+                nextModel =
+                    { model | current = nonePlaying }
+            in
+            ( nextModel, WebAudioFont.stop () )
 
         Generate key ->
-            ( model, model.random |> Dict.get key |> Maybe.map (Random.generate Generated) |> Maybe.withDefault Cmd.none )
+            let
+                found =
+                    model.random |> Dict.get key
+            in
+            ( model, found |> Maybe.map (Random.generate Generated) |> Maybe.withDefault Cmd.none )
 
         Generated performance ->
             ( model, WebAudioFont.queueWavTable performance )
+
+        TravisMessage message ->
+            ( model, Cmd.none )
 
 
 
@@ -94,7 +121,8 @@ view model =
         [ CDN.stylesheet -- creates an inline style node with the Bootstrap CSS
         , Grid.row []
             [ Grid.col []
-                [ Html.h1 [] [ Html.text "Making Music with Elm" ]
+                [ Html.h1 [] [ Html.text "Henrik och Axel" ]
+                , Html.h3 [] [ Html.text model.current ]
                 , model.static
                     |> Dict.keys
                     |> List.map (viewSong Play)

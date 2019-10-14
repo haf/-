@@ -96,10 +96,14 @@ type PitchClass
     | Bss
 
 
+{-| Type synonym for Int.
+-}
 type alias AbsPitch =
     Int
 
 
+{-| Type synonym for Int.
+-}
 type alias Octave =
     Int
 
@@ -139,7 +143,8 @@ type Mode
     | CustomMode String
 
 
-{-| -}
+{-| <https://github.com/surikov/webaudiofont>
+-}
 type InstrumentName
     = AcousticGrandPiano
     | BrightAcousticPiano
@@ -635,6 +640,8 @@ bss octave dur =
     note dur ( Bss, octave )
 
 
+{-| brevis
+-}
 bn : Dur
 bn =
     Ratio.fromInt 2
@@ -647,6 +654,8 @@ bnr =
     rest bn
 
 
+{-| whole note
+-}
 wn : Dur
 wn =
     Ratio.fromInt 1
@@ -659,6 +668,8 @@ wnr =
     rest wn
 
 
+{-| half note
+-}
 hn : Dur
 hn =
     Ratio.over 1 2
@@ -671,6 +682,8 @@ hnr =
     rest hn
 
 
+{-| quarter note
+-}
 qn : Dur
 qn =
     Ratio.over 1 4
@@ -765,6 +778,8 @@ dhnr =
     rest dhn
 
 
+{-| dotted quarter note
+-}
 dqn : Dur
 dqn =
     Ratio.over 3 8
@@ -777,6 +792,8 @@ dqnr =
     rest dqn
 
 
+{-| dotted eighth note
+-}
 den : Dur
 den =
     Ratio.over 3 16
@@ -789,6 +806,8 @@ denr =
     rest den
 
 
+{-| dotted sixteenth note rest
+-}
 dsn : Dur
 dsn =
     Ratio.over 3 32
@@ -1305,11 +1324,15 @@ remove dur m =
                 Modify control (remove dur m_)
 
 
+{-| The duration of the music passed as the first argument is zero
+-}
 isZero : Music a -> Bool
 isZero =
     duration >> Ratio.isZero
 
 
+{-| Removes all zero-duration music snippets from the Music.
+-}
 removeZeros : Music a -> Music a
 removeZeros m =
     case m of
@@ -1354,7 +1377,17 @@ removeZeros m =
             Modify control (removeZeros m_)
 
 
-{-| Creates a note wrapped with the Percussion instrument.
+{-| Creates a note wrapped with the [Percussion instrument][p].
+
+A percussion instrument is a musical instrument that is sounded by being struck or scraped by a
+beater including attached or enclosed beaters or rattles struck, scraped or rubbed by hand or
+struck against another similar instrument.
+
+The percussion family is believed to include the oldest musical instruments, following the
+human voice.
+
+[p]: https://en.wikipedia.org/wiki/Percussion_instrument
+
 -}
 perc : PercussionSound -> Dur -> Music Pitch
 perc ps dur =

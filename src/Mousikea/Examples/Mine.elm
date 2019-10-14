@@ -43,7 +43,7 @@ simpleBeat3 : Music1
 simpleBeat3 =
     times 4 (perc RideCymbal1 qn)
         |> Par (times 10 (perc ClosedHiHat en))
-        |> Par (line [ rest qn, Par (perc RideCymbal1 qn) (perc HiMidTomgit qn) ] |> times 4)
+        |> Par (line [ rest qn, Par (perc RideCymbal1 qn) (perc HiBongo qn) ] |> times 4)
         |> times 16
         |> Music.map (\p -> ( p, [ Volume 60 ] ))
 

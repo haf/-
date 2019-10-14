@@ -38,6 +38,7 @@ function initialize() {
 }
 
 app.ports.stop.subscribe(function () {
+  app.ports.musicStopped.send("")
   player.cancelQueue(audioContext)
 })
 

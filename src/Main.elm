@@ -9,6 +9,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode exposing (Decoder, decodeString, field, int, map2, map3, string)
+import List.Extra exposing (getAt)
 import Mousikea.Examples.BlueLambda as BlueLambda
 import Mousikea.Examples.ChildrenSong6 as ChildrenSong
 import Mousikea.Examples.Drums as Drums
@@ -57,32 +58,17 @@ type alias Model =
     }
 
 
-at index list =
-    -- 3 [ 1, 2, 3, 4, 5, 6 ]
-    if List.length list >= index then
-        List.take index list
-            -- [ 1, 2, 3 ]
-            |> List.reverse
-            -- [ 3, 2, 1 ]
-            |> List.head
-        -- Just 3
-
-    else
-        Nothing
-
-
 v =
     Music.map (\p -> ( p, [ Volume 60 ] ))
 
 
 fallback =
-    Mine.music
+    Mine.simpleBeat
 
 
 available : List Music1
 available =
-    [ fallback
-    , Mine.simpleBeat
+    [ Mine.simpleBeat
     , Mine.simpleBeat2
     , Mine.simpleBeat3
     ]
@@ -241,15 +227,16 @@ update msg model =
                         |> Maybe.map (\( c, rest ) -> Char.toCode c)
                         |> Maybe.withDefault 0
                         |> modBy (List.length available)
-                        |> (\i -> at i available)
+                        |> Debug.log "scheduling index..."
+                        |> (\i -> getAt i available)
+                        |> Debug.log "found:"
                         |> Maybe.withDefault fallback
 
                 perf =
-                    Par music Mine.simpleBeat
-                        |> Perf.performNote1
+                    music |> Perf.performNote1
 
                 ( nextModel, cmd ) =
-                    case model.playing |> Debug.log "playing now" of
+                    case model.playing of
                         Nothing ->
                             ( { model | nextUp = Nothing, current = nextMessage, playing = Just perf }, WebAudioFont.queueWavTable perf )
 
@@ -259,34 +246,18 @@ update msg model =
             ( nextModel, cmd )
 
         MusicStarted str ->
-            let
-                playing =
-                    model.nextUp |> Maybe.withDefault (Perf.performNote1 fallback)
-
-                nextModel =
-                    { model | nextUp = Nothing, playing = Just playing }
-
-                -- TODO:
-            in
             str
                 |> Debug.log "elm: music started"
-                |> (\d -> ( nextModel, Cmd.none ))
+                |> (\d -> ( model, Cmd.none ))
 
         MusicStopped str ->
             let
                 nextModel =
                     { model | playing = Nothing }
-
-                toPlay =
-                    model.nextUp
-                        |> Maybe.withDefault (Perf.performNote1 fallback)
-
-                nextCmd =
-                    WebAudioFont.queueWavTable toPlay
             in
             str
                 |> Debug.log "elm: music stopped"
-                |> (\d -> ( model, nextCmd ))
+                |> (\d -> ( nextModel, Cmd.none ))
 
 
 
@@ -309,6 +280,9 @@ view model =
         , Grid.row []
             [ Grid.col []
                 [ Html.h1 [] [ Html.text "Henrik & Axel Music Masters" ]
+                , Html.h3
+                    [ style "margin-top" "2rem" ]
+                    [ Html.text model.current ]
                 , model.static
                     |> Dict.keys
                     |> List.map (viewSong Play)
@@ -317,9 +291,6 @@ view model =
                     |> Dict.keys
                     |> List.map (viewSong Generate)
                     |> Html.div []
-                , Html.h3
-                    [ style "margin-top" "2rem" ]
-                    [ Html.text model.current ]
                 ]
             ]
         ]
